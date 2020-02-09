@@ -1,0 +1,81 @@
+-- таблица "роли"
+create table role (
+	role_id			bigserial primary key,  	
+	-- роль пользователя, можно переделать на enum
+	role 			varchar(100) not null
+);
+
+-- таблица "пользователи"
+create table client (
+	client_id			bigserial primary key,  	
+	-- логин. Вообще можно сделать его первичным ключем, но лучше не делать жесткую привязку к логину
+	login				varchar(100) not null unique,
+	-- хеш пароля
+	pass_hash 			varchar(100) not null,
+	-- идентификатор роли
+	role_id				int references role(role_id) on delete cascade,
+    -- имя
+	first_name  		varchar(100) not null,
+	-- фамилия
+	last_name 			varchar(100) not null,
+	-- адрес электронной почты
+	email				varchar(100) not null unique,
+	-- номер телефона 
+	phone 				varchar(20)  unique
+);
+
+-- таблица "роли пользователей"
+create table clent_role (
+	client_role_id 		bigserial primary key, 
+	client_id			bigint references client(client_id) on delete cascade,
+	role_id				bigint references role(role_id) on delete cascade
+)
+
+-- таблица "продукт"
+create table product (
+	product_id 		bigserial primary key,  
+	-- название товара
+	title			varchar(100) not null unique,
+	-- категория товара, можно переделать на enum
+	product_type 	varchar,
+	-- краткое описание
+	short_info		varchar(300),
+    -- подробное описание товара
+	full_info		text,
+	-- фото
+	photo bytea,
+	-- стоимость 
+	price			bigint not null,
+	-- единица измерения, можно переделать на enum
+	unit 			varchar(100) not null,
+	-- в наличии
+	amount			bigint not null
+);
+
+-- таблица "заказ"
+create table order_info (
+	order_info_id		bigserial primary key,
+	-- идентификатор заказчика
+	client_id			bigint references client(client_id) on delete cascade,
+	-- статус заказа, можно переделать на enum 
+	status				varchar(100) not null,
+	-- адрес доставки
+	dst_address 		varchar(100),
+	-- время отправки товара
+	checkout_time		timestamp with time zone,
+	-- время получения товара
+	receipt_time		timestamp with time zone 
+);
+
+-- таблица "состав заказа"
+create table order_item (
+	order_content_id 	bigserial primary key,
+	-- идентификатор заказа
+	order_info_id		bigint references order_info(order_info_id) on delete cascade,
+	-- идентификатор товара
+	product_id			bigint references product(product_id) on delete cascade, 
+	-- количество в юнитах
+	quantity			int not null,
+	-- фиксированная стоимость
+	fixed_price 		bigint not null
+);
